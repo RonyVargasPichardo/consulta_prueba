@@ -39,7 +39,7 @@ export default {
 
 .header-content {
     gap: 40px;
-    
+
 }
 
 
@@ -63,7 +63,7 @@ export default {
 }
 
 .titulo-sistema {
-    font-size: 1.27rem;
+    font-size: 1.35rem;
     /* ~22px */
     font-weight: 600;
     color: #002E6D;

@@ -1,21 +1,19 @@
 <template>
+  <Toast />
   <div id="App">
-     <HeaderComponent />
+    <HeaderComponent />
 
-   
-    <ConsultaTramites v-if="vista === 'consulta'" @validacion-correcta="mostrarInstituciones"  />
-<!--
-    
-    <InstitucionesList v-if="vista === 'instituciones'" :instituciones="instituciones"
-      @seleccionar-institucion="mostrarTramites" />-->
-    <FooterComponent /> 
+    <ConsultaInicio />
+    <ConsultaTramites />
+
+    <FooterComponent />
   </div>
 </template>
 
 <script>
 import HeaderComponent from './components/Header.vue';
 import ConsultaTramites from './components/ConsultaTramites.vue'
-// import InstitucionesList from './components/InstitucionesList.vue'
+import ConsultaInicio from './components/ConsultaInicio.vue';
 import FooterComponent from './components/Footer.vue';
 
 export default {
@@ -23,25 +21,8 @@ export default {
   components: {
     HeaderComponent,
     ConsultaTramites,
-    // InstitucionesList,
+    ConsultaInicio,
     FooterComponent,
-  },
-  data() {
-    return {
-      vista: 'consulta', 
-      instituciones: [],
-      tramites: [],
-    }
-  },
-  methods: {
-    mostrarInstituciones(data) {
-      this.instituciones = data.instituciones
-      this.vista = 'instituciones'
-    },
-    mostrarTramites(institucion) {
-      console.log('Institución seleccionada:', institucion)
-      this.vista = 'tramites'
-    }
   }
 }
 </script>
