@@ -7,15 +7,8 @@
       <div class="mb-3">
         <label for="nodocumento" class="form-label fw-semibold">Cédula o RNC</label>
         <div class="input-group">
-          <input
-            id="nodocumento"
-            v-model="nodocumento"
-            type="text"
-            maxlength="9"
-            class="form-control"
-            placeholder="Ingrese su RNC (9 dígitos)"
-            @input="soloNumeros"
-          />
+          <input id="nodocumento" v-model="nodocumento" type="text" maxlength="9" class="form-control"
+            placeholder="Ingrese su RNC (9 dígitos)" @input="soloNumeros" />
           <button type="submit" class="btn btn-primary" :disabled="loading">
             {{ loading ? "Consultando..." : "Consultar" }}
           </button>
@@ -69,11 +62,11 @@ export default {
       if (this.nodocumento.length !== 9) {
         this.error = "El documento debe contener exactamente 9 dígitos."
         this.$toast.add({
-          severity: 'warn',
-          summary: 'Advertencia',
-          detail: this.error,
-          life: 3000
-        })
+          severity: "warn",
+          summary: "Advertencia",
+          detail: "El documento debe contener exactamente 9 dígitos.",
+          life: 4000,
+        });
         return
       }
 

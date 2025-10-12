@@ -16,7 +16,7 @@
 
 
             <!-- Título del sistema -->
-            <h1 class="titulo-sistema mb-0 mr-5">
+            <h1 class="titulo-sistema mb-0">
                 Consulta de Trámites de Proveedores del Estado
             </h1>
         </div>
@@ -71,6 +71,12 @@ export default {
     line-height: 1.2;
     padding-top: 2rem;
     letter-spacing: 0.5px;
+}
+
+@media (max-width: 1200px) {
+    .header {
+        padding-left: 1rem;
+    }
 }
 
 /* Responsivo */

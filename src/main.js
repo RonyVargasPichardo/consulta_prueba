@@ -21,7 +21,7 @@ import Aura from '@primeuix/themes/aura'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 // Optionally import global styles
-// import './style.css';
+import './style.css';
 
 // Create and configure app
 const app = createApp(App);
