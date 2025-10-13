@@ -13,6 +13,12 @@
   align-items: center;
 }
 
+/* Separación entre acordeones */
+.p-accordionpanel {
+  margin-bottom: 0.75rem;
+  border-style: none !important;
+}
+
 /* Hover institucional */
 .p-accordionheader:hover {
   background-color: #eaf3ff !important;

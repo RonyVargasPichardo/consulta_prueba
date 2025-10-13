@@ -31,7 +31,7 @@
             @validacion-correcta="clasificarTramitesLibramientoPagoContrato" />
 
           <!-- RESULTADOS -->
-          <div v-else key="resultados" class="seccion-resultados">
+          <div v-else key="resultados" class="seccion-resultados consulta-container">
 
             <!-- LIBRAMIENTOS -->
             <!-- <div v-if="libramientos.length" class="bloque">
@@ -78,6 +78,7 @@
             </div>
 
             <Accordion multiple>
+              <!-- 🔹 LIBRAMIENTOS -->
               <AccordionTab header="Libramientos" v-if="libramientos.length">
                 <div v-for="(item, i) in libramientos" :key="'l-' + i" class="card card-item shadow-sm"
                   :ref="'libramiento-' + i">
@@ -89,42 +90,67 @@
                   </div>
 
                   <div class="card-body">
-                    <div class="dato-item">
-                      <span class="label">Institución:</span>
-                      <span class="valor">{{ item.username || '—' }}</span>
-                    </div>
-                    <div class="dato-item">
-                      <span class="label">Beneficiario:</span>
-                      <span class="valor">{{ item.address?.street || '—' }}</span>
-                    </div>
-                    <div class="dato-item">
-                      <span class="label">Documento:</span>
-                      <span class="valor">{{ item.address?.suite || '—' }}</span>
-                    </div>
-                    <div class="dato-item">
-                      <span class="label">Ciudad:</span>
-                      <span class="valor">{{ item.address?.city || '—' }}</span>
-                    </div>
+                    <div class="dato-item"><span class="label">Institución:</span> <span class="valor">{{ item.username
+                      || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Beneficiario:</span> <span class="valor">{{
+                      item.address?.street || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Documento:</span> <span class="valor">{{
+                      item.address?.suite || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Ciudad:</span> <span class="valor">{{ item.address?.city
+                      || '—' }}</span></div>
                   </div>
                 </div>
               </AccordionTab>
 
-
-
+              <!-- 🔹 PAGOS DIRECTOS -->
               <AccordionTab header="Pagos Directos" v-if="pagosDirectos.length">
-                <div v-for="(item, i) in pagosDirectos" :key="'p-' + i" class="card card-item">
-                  <strong>{{ item.Código }}</strong> — {{ item.Institución }} <br>
-                  <small>Monto: {{ formatoMoneda(item.Monto) }}</small>
+                <div v-for="(item, i) in pagosDirectos" :key="'p-' + i" class="card card-item shadow-sm"
+                  :ref="'pago-' + i">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{ item.name || '—' }}</strong>
+                    <button class="btn btn-outline-primary btn-sm" @click="descargarPDF(item, 'Pago Directo')">
+                      <i class="pi pi-download me-1"></i> Descargar PDF
+                    </button>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="dato-item"><span class="label">Institución:</span> <span class="valor">{{ item.username
+                      || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Beneficiario:</span> <span class="valor">{{
+                      item.address?.street || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Documento:</span> <span class="valor">{{
+                      item.address?.suite || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Ciudad:</span> <span class="valor">{{ item.address?.city
+                      || '—' }}</span></div>
+                  </div>
                 </div>
               </AccordionTab>
 
+              <!-- 🔹 CONTRATOS -->
               <AccordionTab header="Contratos" v-if="contratos.length">
-                <div v-for="(item, i) in contratos" :key="'c-' + i" class="card card-item">
-                  <strong>{{ item.Código }}</strong> — {{ item.Institución }} <br>
-                  <small>Monto: {{ formatoMoneda(item.Monto) }}</small>
+                <div v-for="(item, i) in contratos" :key="'c-' + i" class="card card-item shadow-sm"
+                  :ref="'contrato-' + i">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{ item.name || '—' }}</strong>
+                    <button class="btn btn-outline-primary btn-sm" @click="descargarPDF(item, 'Contrato')">
+                      <i class="pi pi-download me-1"></i> Descargar PDF
+                    </button>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="dato-item"><span class="label">Institución:</span> <span class="valor">{{ item.username
+                      || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Beneficiario:</span> <span class="valor">{{
+                      item.address?.street || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Documento:</span> <span class="valor">{{
+                      item.address?.suite || '—' }}</span></div>
+                    <div class="dato-item"><span class="label">Ciudad:</span> <span class="valor">{{ item.address?.city
+                      || '—' }}</span></div>
+                  </div>
                 </div>
               </AccordionTab>
             </Accordion>
+
 
 
             <!-- SIN RESULTADOS -->
@@ -133,12 +159,17 @@
               No se encontraron resultados para este RNC.
             </div>
 
-            <!-- BOTÓN NUEVA CONSULTA -->
-            <div class="text-center mt-4">
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="text-center mt-4 d-flex justify-content-center gap-2 flex-wrap">
               <button class="btn btn-outline-primary" @click="nuevaConsulta">
                 Nueva consulta
               </button>
+
+              <button class="btn btn-primary" @click="imprimirTodo">
+                <i class="pi pi-print me-1"></i> Imprimir resultados
+              </button>
             </div>
+
 
           </div>
         </transition>
@@ -217,6 +248,35 @@ export default {
 
       // 📄 Generar y descargar PDF
       await html2pdf().from(contenido).set(opciones).save()
+    },
+    imprimirTodo() {
+      const area = document.querySelector('.consulta-container');
+      if (!area) return;
+
+      const logo = new URL('../assets/LogoContraloriaMobile.png', import.meta.url).href;
+      const fecha = new Date().toLocaleDateString('es-DO', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      const encabezado = `
+    <div style="text-align:center; margin-bottom:20px;">
+      <img src="${logo}" width="180" alt="Logo Contraloría"/>
+      <h2 style="color:#002e6d; margin:10px 0 0;">Contraloría General de la República Dominicana</h2>
+      <p style="color:#555; font-size:0.9rem;">Consulta de Trámites de Proveedores del Estado</p>
+      <p style="font-size:0.8rem; color:#777;">Fecha: ${fecha}</p>
+    </div>
+  `;
+
+      const opciones = {
+        margin: 0.4,
+        filename: 'Resultados_Consulta.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      const contenido = encabezado + area.outerHTML;
+      html2pdf().set(opciones).from(contenido).save();
     },
     // 🔹 Clasificar según "Sistema"
     clasificarTramitesLibramientoPagoContrato(libramiento_pago, contrato) {
@@ -477,7 +537,8 @@ export default {
     font-size: 0.85rem;
     text-align: justify;
   }
-   .resumen-datos {
+
+  .resumen-datos {
     flex-direction: column;
     align-items: flex-start;
   }
