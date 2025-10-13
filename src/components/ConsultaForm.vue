@@ -7,8 +7,8 @@
       <div class="mb-3">
         <label for="nodocumento" class="form-label fw-semibold">Cédula o RNC</label>
         <div class="input-group">
-          <input id="nodocumento" v-model="nodocumento" type="text" maxlength="9" class="form-control"
-            placeholder="Ingrese su RNC (9 dígitos)" @input="soloNumeros" />
+          <input id="nodocumento" v-model="nodocumento" type="text" maxlength="11" class="form-control"
+            placeholder="Ingrese su Cédula (11 dígitos) o RNC (9 dígitos)" @input="soloNumeros" />
           <button type="submit" class="btn btn-primary" :disabled="loading">
             {{ loading ? "Consultando..." : "Consultar" }}
           </button>
@@ -59,27 +59,63 @@ export default {
     async consultarTramites() {
       this.error = ""
 
-      if (this.nodocumento.length !== 9) {
-        this.error = "El documento debe contener exactamente 9 dígitos."
+      const len = this.nodocumento.length
+
+      // ✅ Validación combinada (RNC o Cédula)
+      if (len !== 9 && len !== 11) {
+        this.error = "Debe ingresar un RNC (9 dígitos) o una Cédula (11 dígitos)."
         this.$toast.add({
           severity: "warn",
           summary: "Advertencia",
-          detail: "El documento debe contener exactamente 9 dígitos.",
+          detail: this.error,
           life: 4000,
         });
         return
       }
 
+      const tipo = len === 9 ? "RNC" : "Cédula"
+
+      // ⚠️ Validación adicional para cédula
+      if (tipo === "Cédula") {
+        try {
+          const fallecidoResponse = await api.get(`/api/Consulta/VerificarFallecido?cedula=${this.nodocumento}`);
+
+          if (fallecidoResponse.data?.fallecido === true) {
+            this.$toast.add({
+              severity: "warn",
+              summary: "Aviso importante",
+              detail: "El número de cédula ingresado figura como perteneciente a una persona fallecida según los registros oficiales. Si considera que esta información es incorrecta, por favor contacte a la institución correspondiente.",
+              life: 7000,
+            });
+            this.error = "El número de cédula ingresado figura como perteneciente a una persona fallecida según los registros oficiales. Si considera que esta información es incorrecta, por favor contacte a la institución correspondiente."
+            return
+          }
+        } catch (error) {
+          console.error("⚠️ Error al verificar fallecimiento:", error);
+          this.$toast.add({
+            severity: "info",
+            summary: "Aviso",
+            detail: "No se pudo verificar el estado de la cédula en este momento. Puede intentar nuevamente más tarde.",
+            life: 4000,
+          });
+
+          this.error = "No se pudo verificar el estado de la cédula en este momento. Puede intentar nuevamente más tarde."
+          return
+        }
+      }
+
       this.loading = true
 
       try {
-        const response = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
-        this.$emit("validacion-correcta", response.data)
+        const response_libramiento_pago = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
+        const response_contrato = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
+
+        this.$emit("validacion-correcta", response_libramiento_pago.data, response_contrato.data)
 
         this.$toast.add({
           severity: 'success',
           summary: 'Consulta exitosa',
-          detail: 'Trámites obtenidos correctamente.',
+          detail: `Trámites obtenidos correctamente (${tipo}).`,
           life: 3000
         })
       } catch (err) {

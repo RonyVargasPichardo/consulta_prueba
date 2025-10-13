@@ -27,7 +27,8 @@
         <!-- 🔹 CONTENIDO PRINCIPAL -->
         <transition name="fade" mode="out-in">
           <!-- FORMULARIO -->
-          <ConsultaForm v-if="!resultados" key="formulario" @validacion-correcta="clasificarTramites" />
+          <ConsultaForm v-if="!resultados" key="formulario"
+            @validacion-correcta="clasificarTramitesLibramientoPagoContrato" />
 
           <!-- RESULTADOS -->
           <div v-else key="resultados" class="seccion-resultados">
@@ -101,8 +102,8 @@ export default {
   },
   methods: {
     // 🔹 Clasificar según "Sistema"
-    clasificarTramites(data) {
-      console.log('✅ Datos recibidos del formulario:', data)
+    clasificarTramitesLibramientoPagoContrato(libramiento_pago, contrato) {
+      console.log('✅ Datos recibidos del formulario:', libramiento_pago, contrato)
 
       // Reiniciamos las listas
       this.libramientos = []
@@ -110,21 +111,24 @@ export default {
       this.contratos = []
 
       // Aseguramos que trabajamos con un array
-      const tramites = Array.isArray(data) ? data : [data]
+      const tramites_libramiento_pago = Array.isArray(libramiento_pago) ? libramiento_pago : [libramiento_pago]
+      const tramites_contrato = Array.isArray(contrato) ? contrato : [contrato]
 
-      tramites.forEach(item => {
+      tramites_libramiento_pago.forEach(tramite => {
         // algunos campos pueden venir en minúsculas o con espacios
-        const sistema = (item.Sistema || item.sistema || '').trim().toLowerCase()
+        const sistema = (tramite.Sistema || tramite.sistema || '').trim().toLowerCase()
 
         if (sistema.includes('libramiento')) {
-          this.libramientos.push(item)
+          this.libramientos.push(tramite)
         } else if (sistema.includes('pago')) {
-          this.pagosDirectos.push(item)
-        } else if (sistema.includes('contrato')) {
-          this.contratos.push(item)
+          this.pagosDirectos.push(tramite)
         } else {
-          console.warn('⚠️ Sistema desconocido:', sistema, item)
+          console.warn('⚠️ Sistema desconocido:', sistema, tramite)
         }
+      })
+
+      tramites_contrato.forEach(tramite => {
+        this.contratos.push(tramite)
       })
 
       // Activamos la vista de resultados
@@ -142,8 +146,13 @@ export default {
         day: '2-digit'
       })
     },
-
-
+    formatoMoneda(valor) {
+      if (!valor) return 'RD$ 0.00'
+      return new Intl.NumberFormat('es-DO', {
+        style: 'currency',
+        currency: 'DOP'
+      }).format(valor)
+    },
     nuevaConsulta() {
       this.resultados = false
       this.libramientos = []
@@ -155,13 +164,7 @@ export default {
       }, 300);
     },
 
-    formatoMoneda(valor) {
-      if (!valor) return 'RD$ 0.00'
-      return new Intl.NumberFormat('es-DO', {
-        style: 'currency',
-        currency: 'DOP'
-      }).format(valor)
-    }
+
   }
 }
 </script>
