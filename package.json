@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.5",
+    "axios": "^1.12.2",
     "bootstrap": "^5.3.8",
+    "html2pdf.js": "^0.12.1",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",

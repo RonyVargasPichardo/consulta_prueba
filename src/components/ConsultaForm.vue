@@ -3,7 +3,7 @@
     <!-- 🟢 Toast de PrimeVue -->
     <Toast />
 
-    <form @submit.prevent="consultarTramites">
+    <form @submit.prevent="consultarTramitesPrueba" class="mb-3">
       <div class="mb-3">
         <label for="nodocumento" class="form-label fw-semibold">Cédula o RNC</label>
         <div class="input-group">
@@ -23,6 +23,7 @@
 
 <script>
 // import api from '@/utilities/api.js'
+import axios from 'axios'
 
 export default {
   name: "ConsultaForm",
@@ -85,59 +86,91 @@ export default {
         return false
       }
     },
-    async consultarTramites() {
-      this.error = ""
+    // async consultarTramites() {
+    //   this.error = ""
 
-      const len = this.nodocumento.length
+    //   const len = this.nodocumento.length
 
-      // ✅ Validación combinada (RNC o Cédula)
-      if (len !== 9 && len !== 11) {
-        this.error = "Debe ingresar un RNC (9 dígitos) o una Cédula (11 dígitos)."
+    //   // ✅ Validación combinada (RNC o Cédula)
+    //   if (len !== 9 && len !== 11) {
+    //     this.error = "Debe ingresar un RNC (9 dígitos) o una Cédula (11 dígitos)."
+    //     this.$toast.add({
+    //       severity: "warn",
+    //       summary: "Advertencia",
+    //       detail: this.error,
+    //       life: 4000,
+    //     });
+    //     return
+    //   }
+
+    //   const tipo_documento = len === 9 ? "RNC" : "Cédula"
+
+    //   // ⚠️ Validación de fallecidos solo para cédulas
+    //   if (tipo_documento === "Cédula") {
+    //     if (!await this.validarCedula(this.nodocumento)) {
+    //       return //si la cédula es inválida o está fallecida, no continuar
+    //     }
+    //   }
+
+    //   this.loading = true
+
+    //   try {
+    //     const response_libramiento_pago = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
+    //     const response_contrato = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
+
+    //     this.$emit("validacion-correcta", response_libramiento_pago.data, response_contrato.data)
+
+    //     this.$toast.add({
+    //       severity: 'success',
+    //       summary: 'Consulta exitosa',
+    //       detail: `Trámites obtenidos correctamente (${tipo_documento}).`,
+    //       life: 3000
+    //     })
+    //   } catch (err) {
+    //     console.error("❌ Error al consultar trámites:", err)
+    //     this.error = "Ocurrió un error al consultar los trámites."
+    //     this.$toast.add({
+    //       severity: 'error',
+    //       summary: 'Error',
+    //       detail: this.error,
+    //       life: 4000
+    //     })
+    //   } finally {
+    //     this.loading = false
+    //   }
+    // }
+
+    async consultarTramitesPrueba() {
+      this.error = "";
+      this.loading = true;
+
+      try {
+        // 🔹 Llamadas simuladas
+        const response_libramiento_pago = await axios.get("https://jsonplaceholder.typicode.com/users");
+        const response_contrato = await axios.get("https://jsonplaceholder.typicode.com/users");
+
+        // 🔹 Emitimos datos simulados
+        this.$emit("validacion-correcta", response_libramiento_pago.data, response_contrato.data);
+
         this.$toast.add({
-          severity: "warn",
-          summary: "Advertencia",
+          severity: "success",
+          summary: "Datos de prueba cargados",
+          detail: "Se han obtenido los datos correctamente.",
+          life: 3000,
+        });
+      } catch (err) {
+        console.error("❌ Error al obtener datos simulados:", err);
+        this.error = "Ocurrió un error al obtener los datos de prueba.";
+        this.$toast.add({
+          severity: "error",
+          summary: "Error",
           detail: this.error,
           life: 4000,
         });
-        return
-      }
-
-      const tipo_documento = len === 9 ? "RNC" : "Cédula"
-
-      // ⚠️ Validación de fallecidos solo para cédulas
-      if (tipo_documento === "Cédula") {
-        if (!await this.validarCedula(this.nodocumento)) {
-          return //si la cédula es inválida o está fallecida, no continuar
-        }
-      }
-
-      this.loading = true
-
-      try {
-        const response_libramiento_pago = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
-        const response_contrato = await api.get(`/api/Consulta/GetTramitesProveedor?nodocumento=${this.nodocumento}`)
-
-        this.$emit("validacion-correcta", response_libramiento_pago.data, response_contrato.data)
-
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Consulta exitosa',
-          detail: `Trámites obtenidos correctamente (${tipo_documento}).`,
-          life: 3000
-        })
-      } catch (err) {
-        console.error("❌ Error al consultar trámites:", err)
-        this.error = "Ocurrió un error al consultar los trámites."
-        this.$toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: this.error,
-          life: 4000
-        })
       } finally {
-        this.loading = false
+        this.loading = false;
       }
-    }
+    },
   }
 }
 </script>

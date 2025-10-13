@@ -10,7 +10,6 @@
       <!-- CONTENIDO PRINCIPAL -->
       <main class="contenido-principal">
         <ConsultaInicio />
-        <ConsultaTramites />
       </main>
 
       <!-- FOOTER -->

@@ -1,3 +1,56 @@
+/* ====== ESTILO PERSONALIZADO DE ACORDEONES ====== */
+.p-accordionheader {
+  background-color: #f8fbff !important;
+  color: #002e6d !important;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 1px solid #d0e3ff !important;
+  border-radius: 8px !important;
+  transition: all 0.25s ease-in-out;
+  padding: 0.9rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hover institucional */
+.p-accordionheader:hover {
+  background-color: #eaf3ff !important;
+  border-color: #b6d4fe !important;
+}
+
+/* Cuando el acordeón está abierto */
+.p-accordionheader[data-p-active="true"] {
+  background-color: #002e6d !important;
+  color: #ffffff !important;
+  border-color: #002e6d !important;
+}
+
+/* Ícono del acordeón */
+.p-accordionheader .p-accordionheader-toggle-icon {
+  color: inherit !important;
+  font-size: 1rem;
+}
+
+/* Título del acordeón (el texto “Libramientos”, “Contratos”, etc.) */
+.p-accordionheader [data-pc-section="headertitle"] {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Contenido interno */
+.p-accordioncontent {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 0 8px 8px !important;
+  padding: 1.2rem 1.5rem;
+}
+
+
+
+/* ====== TOASTS ====== */
+/* Estilos personalizados para los toasts */
 /* 📱 Ajustes visuales para toasts en móviles */
 @media (max-width: 768px) {
   .p-toast {
