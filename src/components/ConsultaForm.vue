@@ -55,7 +55,36 @@ export default {
     soloNumeros() {
       this.nodocumento = this.nodocumento.replace(/[^0-9]/g, "")
     },
+    async validarCedula(cedula) {
+      try {
+        const fallecidoResponse = await api.get(`/api/Consulta/VerificarFallecido?cedula=${cedula}`)
 
+        if (fallecidoResponse.data?.fallecido === true) {
+          this.$toast.add({
+            severity: "warn",
+            summary: "Aviso importante",
+            detail:
+              "El número de cédula ingresado figura como perteneciente a una persona fallecida según los registros oficiales. Si considera que esta información es incorrecta, por favor contacte a la institución correspondiente.",
+            life: 7000,
+          })
+          this.error =
+            "El número de cédula ingresado figura como perteneciente a una persona fallecida según los registros oficiales. Si considera que esta información es incorrecta, por favor contacte a la institución correspondiente."
+          return false // 🚫 devuelve false si no debe continuar
+        }
+        return true // ✅ si no está fallecida, continuar
+      } catch (error) {
+        console.error("⚠️ Error al verificar fallecimiento:", error)
+        this.$toast.add({
+          severity: "info",
+          summary: "Aviso",
+          detail: "No se pudo verificar el estado de la cédula en este momento. Puede intentar nuevamente más tarde.",
+          life: 4000,
+        })
+        this.error = "No se pudo verificar el estado de la cédula en este momento. Puede intentar nuevamente más tarde."
+        // ⚠️ aquí decides si continuar o no. Si NO quieres continuar cuando hay error:
+        return false
+      }
+    },
     async consultarTramites() {
       this.error = ""
 
@@ -73,34 +102,12 @@ export default {
         return
       }
 
-      const tipo = len === 9 ? "RNC" : "Cédula"
+      const tipo_documento = len === 9 ? "RNC" : "Cédula"
 
-      // ⚠️ Validación adicional para cédula
-      if (tipo === "Cédula") {
-        try {
-          const fallecidoResponse = await api.get(`/api/Consulta/VerificarFallecido?cedula=${this.nodocumento}`);
-
-          if (fallecidoResponse.data?.fallecido === true) {
-            this.$toast.add({
-              severity: "warn",
-              summary: "Aviso importante",
-              detail: "El número de cédula ingresado figura como perteneciente a una persona fallecida según los registros oficiales. Si considera que esta información es incorrecta, por favor contacte a la institución correspondiente.",
-              life: 7000,
-            });
-            this.error = "El número de cédula ingresado figura como perteneciente a una persona fallecida según los registros oficiales. Si considera que esta información es incorrecta, por favor contacte a la institución correspondiente."
-            return
-          }
-        } catch (error) {
-          console.error("⚠️ Error al verificar fallecimiento:", error);
-          this.$toast.add({
-            severity: "info",
-            summary: "Aviso",
-            detail: "No se pudo verificar el estado de la cédula en este momento. Puede intentar nuevamente más tarde.",
-            life: 4000,
-          });
-
-          this.error = "No se pudo verificar el estado de la cédula en este momento. Puede intentar nuevamente más tarde."
-          return
+      // ⚠️ Validación de fallecidos solo para cédulas
+      if (tipo_documento === "Cédula") {
+        if (!await this.validarCedula(this.nodocumento)) {
+          return //si la cédula es inválida o está fallecida, no continuar
         }
       }
 
@@ -115,7 +122,7 @@ export default {
         this.$toast.add({
           severity: 'success',
           summary: 'Consulta exitosa',
-          detail: `Trámites obtenidos correctamente (${tipo}).`,
+          detail: `Trámites obtenidos correctamente (${tipo_documento}).`,
           life: 3000
         })
       } catch (err) {
