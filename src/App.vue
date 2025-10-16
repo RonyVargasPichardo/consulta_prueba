@@ -1,45 +1,71 @@
 <template>
   <Toast />
 
-  <!-- 💫 Transición global -->
   <transition name="fade-slide" appear>
-    <div id="App">
-      <!-- HEADER -->
-      <HeaderComponent />
-
-      <!-- CONTENIDO PRINCIPAL -->
-      <main class="contenido-principal">
-        <ConsultaInicio />
+    <div id="App" class="portal-consulta d-flex flex-column min-vh-100">
+      
+      <!-- 🔹 CONTENIDO PRINCIPAL SIN HEADER -->
+      <main class="flex-grow-1 d-flex align-items-center justify-content-center bg-gradiente">
+        <div class="container py-5 position-relative z-1">
+          <ConsultaInicio />
+        </div>
       </main>
 
-      <!-- FOOTER -->
+      <!-- 🔹 FOOTER -->
       <FooterComponent />
     </div>
   </transition>
 </template>
 
 <script>
-import HeaderComponent from './components/Header.vue'
-import ConsultaTramites from './components/ConsultaTramites.vue'
 import ConsultaInicio from './components/ConsultaInicio.vue'
 import FooterComponent from './components/Footer.vue'
 
 export default {
   name: 'App',
   components: {
-    HeaderComponent,
-    ConsultaTramites,
     ConsultaInicio,
-    FooterComponent,
+    FooterComponent
+  },
+  mounted() {
+    window.scrollTo(0, 0);
   }
 }
 </script>
 
 <style>
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
+
+/* 🔹 Fondo institucional (gradiente 4 esquinas) */
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-  background-color: #f9f9f9;
+  font-family: "Open Sans", sans-serif;
+  background: radial-gradient(
+      circle at top left,
+      rgba(13, 71, 161, 0.1),
+      transparent 65%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(13, 71, 161, 0.1),
+      transparent 65%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(13, 71, 161, 0.1),
+      transparent 65%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(13, 71, 161, 0.1),
+      transparent 65%
+    ),
+    #ffffff;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #333;
+  min-height: 100vh;
 }
 
 /* 🔹 Transición global */
@@ -53,32 +79,5 @@ body {
 .fade-slide-enter-to {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* 🔹 Estructura */
-#App {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.contenido-principal {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  animation: fadeIn 0.8s ease-out;
-}
-
-/* 💫 Pequeño efecto extra al aparecer el contenido */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 </style>

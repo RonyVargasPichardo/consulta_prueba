@@ -1,546 +1,269 @@
 <template>
-  <section class="pagina-consulta">
-    <div class="container d-flex justify-content-center">
-      <div class="card-consulta shadow-sm">
+  <section class="inicio-consulta container py-5">
+    <!-- 💫 Transición tipo canvas -->
+    <transition name="canvas-slide" mode="out-in">
+      <!-- 🔹 Vista inicial -->
+      <div v-if="!mostrarResultado" key="inicio">
+        <div class="row align-items-center justify-content-center g-5">
+          <!-- 🔹 Columna izquierda: mensaje institucional -->
+          <div class="col-12 col-lg-6 d-flex flex-column justify-content-center">
+            <div class="info-text pe-lg-4">
+              <h4 class="fw-semibold titulo-info mb-3">
+                Consulta y Validación de Proveedores del Estado
+              </h4>
 
-        <!-- 🔹 Título dinámico -->
-        <h2 v-if="!resultados" class="titulo-principal">
-          {{ resultados ? 'Resultados de la Consulta' : 'Consulta de Trámites' }}
-        </h2>
+              <p class="text-muted mb-4">
+                Acceda al sistema oficial de la Contraloría General de la República para validar
+                trámites de <strong>Contratos</strong>, <strong>Libramientos</strong> y
+                <strong>Pagos Directos</strong> de forma rápida, segura y disponible las 24 horas.
+              </p>
 
-        <!-- 🔹 Mensaje institucional (solo si no hay resultados) -->
-        <transition name="fade" mode="out-in">
-          <div v-if="!resultados" key="mensaje"
-            class="alert alert-info alert-dismissible fade show mensaje-alerta d-flex align-items-start" role="alert">
-            <div class="icono-info me-2">
-              ℹ️
+              <ul class="list-unstyled text-muted small mb-4">
+                <li class="mb-2">
+                  <i class="pi pi-check-circle text-primary me-2"></i>
+                  Información verificada en registros institucionales.
+                </li>
+                <li class="mb-2">
+                  <i class="pi pi-check-circle text-primary me-2"></i>
+                  Resultados claros y actualizados en tiempo real.
+                </li>
+              </ul>
+
+              <!-- 🔸 Botón institucional -->
+              <a
+                href="https://www.contraloria.gob.do"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-outline-primary btn-sm boton-portal"
+              >
+                <i class="pi pi-globe me-2"></i>
+                Volver al Portal Web de la Contraloría
+              </a>
             </div>
-            <div>
-              Bienvenido(a). Este sistema le permite consultar el estado de sus
-              trámites de manera rápida y segura. Ingrese su información para
-              continuar con la verificación.
-            </div>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
-        </transition>
 
-        <!-- 🔹 CONTENIDO PRINCIPAL -->
-        <transition name="fade" mode="out-in">
-          <!-- FORMULARIO -->
-          <ConsultaForm v-if="!resultados" key="formulario"
-            @validacion-correcta="clasificarTramitesLibramientoPagoContrato" />
+          <!-- 🔹 Columna derecha: formulario -->
+          <div class="col-12 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+              <div class="text-center mb-4">
+                <img
+                  src="../assets/LogoContraloriaMobile.png"
+                  alt="Logo institucional"
+                  class="logo-mini mb-3"
+                />
+                <h5 class="fw-semibold titulo-consulta mb-1">
+                  Consulta de Trámites
+                </h5>
+                <p class="text-muted small mb-0">
+                  Ingrese su número de documento para verificar el estatus.
+                </p>
+              </div>
 
-          <!-- RESULTADOS -->
-          <div v-else key="resultados" class="seccion-resultados consulta-container">
-
-            <!-- LIBRAMIENTOS -->
-            <!-- <div v-if="libramientos.length" class="bloque">
-              <h5 class="seccion-titulo">Libramientos</h5>
-              <div v-for="(item, i) in libramientos" :key="'l-' + i" class="card card-item">
-                <strong>{{ item.certificacion || '—' }}</strong><br>
-                <div><strong>Institución:</strong> {{ item.Institucion || item.Institución || 'No especificada' }}</div>
-                <div><strong>Beneficiario:</strong> {{ item.beneficiario || '—' }}</div>
-                <div><strong>Documento:</strong> {{ item.Documento || item.documento || '—' }}</div>
-                <div><strong>Monto:</strong> {{ formatoMoneda(item.monto || 0) }}</div>
-                <div><strong>Fecha Registro:</strong> {{ formatoFecha(item.fecha_registro || item.Fecha_Registro) }}
+              <!-- 🧾 Formulario -->
+              <form @submit.prevent="consultarTramites" class="text-start">
+                <div class="mb-3">
+                  <label for="rnc" class="form-label fw-semibold">Número de Documento</label>
+                  <input
+                    id="rnc"
+                    v-model="rnc"
+                    type="text"
+                    maxlength="11"
+                    class="form-control form-control-lg rounded-3"
+                    placeholder="Digite su RNC o Cédula"
+                    @input="soloNumeros"
+                    required
+                  />
                 </div>
-              </div>
-            </div> -->
 
+                <div class="d-grid mt-4 mb-3">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-thin"
+                    :disabled="loading"
+                  >
+                    <i class="pi pi-search me-2"></i>
+                    {{ loading ? "Consultando..." : "Validar Documento" }}
+                  </button>
+                </div>
+              </form>
 
-            <!-- PAGOS DIRECTOS -->
-            <!-- <div v-if="pagosDirectos.length" class="bloque">
-              <h5 class="seccion-titulo">Pagos Directos</h5>
-              <div v-for="(item, i) in pagosDirectos" :key="'p-' + i" class="card card-item">
-                <strong>{{ item.Código }}</strong> — {{ item.Institución }} <br>
-                <small>Monto: {{ formatoMoneda(item.Monto) }}</small>
-              </div>
-            </div> -->
-
-            <!-- CONTRATOS -->
-            <!-- <div v-if="contratos.length" class="bloque">
-              <h5 class="seccion-titulo">Contratos</h5>
-              <div v-for="(item, i) in contratos" :key="'c-' + i" class="card card-item">
-                <strong>{{ item.Código }}</strong> — {{ item.Institución }} <br>
-                <small>Monto: {{ formatoMoneda(item.Monto) }}</small>
-              </div>
-            </div> -->
-
-
-            <!-- 🔹 Datos generales del proveedor -->
-            <div v-if="beneficiarioGeneral" class="resumen-general card shadow-sm p-3 mb-4">
-              <h5 class="titulo-principal">Resultados de la Consulta</h5>
-
-              <div class="resumen-datos d-flex flex-wrap justify-content-start align-items-center">
-                <p class="mb-1"><strong>Beneficiario:</strong> {{ beneficiarioGeneral }}</p>
-                <p class="mb-1"><strong>No. Documento:</strong> {{ documentoGeneral }}</p>
+              <!-- 🔹 Línea y candado -->
+              <div class="seguridad text-center pt-3 mt-3 border-top">
+                <i class="pi pi-lock text-primary me-2"></i>
+                <small class="text-muted">
+                  Su consulta es confidencial y está protegida por protocolos de seguridad institucional.
+                </small>
               </div>
             </div>
-
-            <Accordion multiple>
-              <!-- 🔹 LIBRAMIENTOS -->
-              <AccordionTab header="Libramientos" v-if="libramientos.length">
-                <div v-for="(item, i) in libramientos" :key="'l-' + i" class="card card-item shadow-sm"
-                  :ref="'libramiento-' + i">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>{{ item.name || '—' }}</strong>
-                    <button class="btn btn-outline-primary btn-sm" @click="descargarPDF(item, 'Libramiento')">
-                      <i class="pi pi-download me-1"></i> Descargar PDF
-                    </button>
-                  </div>
-
-                  <div class="card-body">
-                    <div class="dato-item"><span class="label">Institución:</span> <span class="valor">{{ item.username
-                      || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Beneficiario:</span> <span class="valor">{{
-                      item.address?.street || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Documento:</span> <span class="valor">{{
-                      item.address?.suite || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Ciudad:</span> <span class="valor">{{ item.address?.city
-                      || '—' }}</span></div>
-                  </div>
-                </div>
-              </AccordionTab>
-
-              <!-- 🔹 PAGOS DIRECTOS -->
-              <AccordionTab header="Pagos Directos" v-if="pagosDirectos.length">
-                <div v-for="(item, i) in pagosDirectos" :key="'p-' + i" class="card card-item shadow-sm"
-                  :ref="'pago-' + i">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>{{ item.name || '—' }}</strong>
-                    <button class="btn btn-outline-primary btn-sm" @click="descargarPDF(item, 'Pago Directo')">
-                      <i class="pi pi-download me-1"></i> Descargar PDF
-                    </button>
-                  </div>
-
-                  <div class="card-body">
-                    <div class="dato-item"><span class="label">Institución:</span> <span class="valor">{{ item.username
-                      || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Beneficiario:</span> <span class="valor">{{
-                      item.address?.street || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Documento:</span> <span class="valor">{{
-                      item.address?.suite || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Ciudad:</span> <span class="valor">{{ item.address?.city
-                      || '—' }}</span></div>
-                  </div>
-                </div>
-              </AccordionTab>
-
-              <!-- 🔹 CONTRATOS -->
-              <AccordionTab header="Contratos" v-if="contratos.length">
-                <div v-for="(item, i) in contratos" :key="'c-' + i" class="card card-item shadow-sm"
-                  :ref="'contrato-' + i">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>{{ item.name || '—' }}</strong>
-                    <button class="btn btn-outline-primary btn-sm" @click="descargarPDF(item, 'Contrato')">
-                      <i class="pi pi-download me-1"></i> Descargar PDF
-                    </button>
-                  </div>
-
-                  <div class="card-body">
-                    <div class="dato-item"><span class="label">Institución:</span> <span class="valor">{{ item.username
-                      || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Beneficiario:</span> <span class="valor">{{
-                      item.address?.street || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Documento:</span> <span class="valor">{{
-                      item.address?.suite || '—' }}</span></div>
-                    <div class="dato-item"><span class="label">Ciudad:</span> <span class="valor">{{ item.address?.city
-                      || '—' }}</span></div>
-                  </div>
-                </div>
-              </AccordionTab>
-            </Accordion>
-
-
-
-            <!-- SIN RESULTADOS -->
-            <div v-if="!contratos.length && !libramientos.length && !pagosDirectos.length"
-              class="alert alert-warning mt-3">
-              No se encontraron resultados para este RNC.
-            </div>
-
-            <!-- BOTONES DE ACCIÓN -->
-            <div class="text-center mt-4 d-flex justify-content-center gap-2 flex-wrap">
-              <button class="btn btn-outline-primary" @click="nuevaConsulta">
-                Nueva consulta
-              </button>
-
-              <button class="btn btn-primary" @click="imprimirTodo">
-                <i class="pi pi-print me-1"></i> Imprimir resultados
-              </button>
-            </div>
-
-
           </div>
-        </transition>
+        </div>
       </div>
-    </div>
+
+      <!-- 🔹 Vista de resultado (simulada) -->
+      <div v-else key="resultado" class="resultado-container text-center p-5">
+        <h3 class="fw-semibold text-primary mb-3">Resultado de la Consulta</h3>
+        <p class="text-muted mb-4">
+          Documento verificado exitosamente. No se encontraron incidencias registradas en los sistemas de Contraloría.
+        </p>
+        <button class="btn btn-outline-primary btn-sm" @click="volver">
+          <i class="pi pi-arrow-left me-2"></i> Volver al Inicio
+        </button>
+      </div>
+    </transition>
   </section>
 </template>
 
 <script>
-import ConsultaForm from './ConsultaForm.vue'
-import Accordion from 'primevue/accordion'
-import AccordionTab from 'primevue/accordiontab'
-import html2pdf from "html2pdf.js"
-
 export default {
-  name: 'ConsultaInicio',
-  components: { ConsultaForm, Accordion, AccordionTab },
+  name: "ConsultaInicio",
   data() {
     return {
-      resultados: false, // para mostrar u ocultar
-      libramientos: [],
-      pagosDirectos: [],
-      contratos: [],
-      beneficiarioGeneral: "",
-      documentoGeneral: ""
-    }
+      rnc: "",
+      loading: false,
+      error: null,
+      mostrarResultado: false, // 👈 para alternar las vistas
+    };
   },
   methods: {
-    async descargarPDF(item, tipo = "Libramiento") {
-      // 🏛️ Logo institucional (ajusta la ruta si tu componente está en otra carpeta)
-      const logo = new URL('../assets/LogoContraloriaMobile.png', import.meta.url).href
-
-      // 🧩 Contenido HTML del PDF
-      const contenido = `
-        <div style="font-family: Arial, sans-serif; padding: 20px 40px; color: #222;">
-          <!-- 🔷 Franja institucional superior -->
-          <div style="background-color:#002e6d; height:2px; border-radius:3px; margin-bottom:15px;"></div>
-
-          <!-- 🏛️ Encabezado -->
-          <div style="text-align:center; margin-bottom:25px;">
-            <img src="${logo}" width="240" alt="Logo Contraloría"/>
-            <h2 style="color:#002e6d; margin:10px 0;">Contraloría General de la República Dominicana</h2>
-            <h3 style="color:#444; font-size:1.1rem; margin:0;">Consulta de Trámites de Proveedores del Estado</h3>
-          </div>
-
-          <!-- 📘 Datos del trámite -->
-          <div style="border:1px solid #d0d7e2; border-radius:8px; padding:20px; background:#fafafa;">
-            <h5 style="color:#002e6d; margin-top:0;">${tipo}</h5>
-            <p><strong>Nombre:</strong> ${item.name || '—'}</p>
-            <p><strong>Institución:</strong> ${item.username || '—'}</p>
-            <p><strong>Beneficiario:</strong> ${item.address?.street || '—'}</p>
-            <p><strong>Documento:</strong> ${item.address?.suite || '—'}</p>
-            <p><strong>Ciudad:</strong> ${item.address?.city || '—'}</p>
-          </div>
-
-          <!-- 🔹 Pie de página institucional -->
-          <div style="margin-top:40px; text-align:center; font-size:0.85rem; color:#555;">
-            <hr style="margin-bottom:10px; border:none; border-top:1px solid #ccc;">
-            <p>Generado automáticamente por el sistema de <strong>Consulta de Trámites de Proveedores del Estado</strong></p>
-            <p>Contraloría General de la República Dominicana</p>
-            <p style="font-style:italic; color:#777;">${new Date().toLocaleDateString('es-DO', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      })}</p>
-          </div>
-        </div>
-      `
-
-      // ⚙️ Configuración del PDF
-      const opciones = {
-        margin: 10,
-        filename: `${tipo}_${item.name || 'documento'}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      }
-
-      // 📄 Generar y descargar PDF
-      await html2pdf().from(contenido).set(opciones).save()
+    soloNumeros(e) {
+      this.rnc = e.target.value.replace(/[^0-9]/g, "");
     },
-    imprimirTodo() {
-      const area = document.querySelector('.consulta-container');
-      if (!area) return;
-
-      const logo = new URL('../assets/LogoContraloriaMobile.png', import.meta.url).href;
-      const fecha = new Date().toLocaleDateString('es-DO', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
-
-      const encabezado = `
-    <div style="text-align:center; margin-bottom:20px;">
-      <img src="${logo}" width="180" alt="Logo Contraloría"/>
-      <h2 style="color:#002e6d; margin:10px 0 0;">Contraloría General de la República Dominicana</h2>
-      <p style="color:#555; font-size:0.9rem;">Consulta de Trámites de Proveedores del Estado</p>
-      <p style="font-size:0.8rem; color:#777;">Fecha: ${fecha}</p>
-    </div>
-  `;
-
-      const opciones = {
-        margin: 0.4,
-        filename: 'Resultados_Consulta.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-
-      const contenido = encabezado + area.outerHTML;
-      html2pdf().set(opciones).from(contenido).save();
-    },
-    // 🔹 Clasificar según "Sistema"
-    clasificarTramitesLibramientoPagoContrato(libramiento_pago, contrato) {
-      console.log('✅ Datos recibidos del formulario:', libramiento_pago, contrato)
-
-      // Reiniciamos las listas
-      this.libramientos = []
-      this.pagosDirectos = []
-      this.contratos = []
-
-
-      // Aseguramos que trabajamos con un array
-      const tramites_libramiento_pago = Array.isArray(libramiento_pago) ? libramiento_pago : [libramiento_pago]
-      const tramites_contrato = Array.isArray(contrato) ? contrato : [contrato]
-
-
-      // 🧾 Si hay datos, tomamos los generales del primer elemento
-      const primerTramite = tramites_libramiento_pago[0] || tramites_contrato[0] || null
-      if (primerTramite) {
-        this.beneficiarioGeneral = primerTramite.beneficiario || primerTramite.Beneficiario || primerTramite.name || "—"
-        this.documentoGeneral = primerTramite.Documento || primerTramite.documento || "40237523669"
-      }
-
-      tramites_libramiento_pago.forEach(tramite => {
-        // algunos campos pueden venir en minúsculas o con espacios
-        const sistema = (tramite.Sistema || tramite.sistema || '').trim().toLowerCase()
-
-        if (sistema.includes('libramiento')) {
-          this.libramientos.push(tramite)
-        } else if (sistema.includes('pago')) {
-          this.pagosDirectos.push(tramite)
-        } else {
-          console.warn('⚠️ Sistema desconocido:', sistema, tramite)
-        }
-      })
-
-      tramites_libramiento_pago.forEach(tramite => {
-        this.libramientos.push(tramite)
-      })
-
-      tramites_contrato.forEach(tramite => {
-        this.contratos.push(tramite)
-      })
-
-      // Activamos la vista de resultados
-      this.resultados = true
-
-      console.log('📘 Libramientos:', this.libramientos)
-      console.log('📗 Pagos directos:', this.pagosDirectos)
-      console.log('📙 Contratos:', this.contratos)
-    },
-    formatoFecha(fecha) {
-      if (!fecha) return '—'
-      return new Date(fecha).toLocaleDateString('es-DO', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      })
-    },
-    formatoMoneda(valor) {
-      if (!valor) return 'RD$ 0.00'
-      return new Intl.NumberFormat('es-DO', {
-        style: 'currency',
-        currency: 'DOP'
-      }).format(valor)
-    },
-    nuevaConsulta() {
-      this.resultados = false
-      this.libramientos = []
-      this.pagosDirectos = []
-      this.contratos = []
-
+    async consultarTramites() {
+      if (!this.rnc) return;
+      this.loading = true;
       setTimeout(() => {
-        window.location.reload();
-      }, 300);
+        this.loading = false;
+        this.mostrarResultado = true; // 👈 activa la vista del resultado
+      }, 1000);
     },
-
-
-  }
-}
+    volver() {
+      this.mostrarResultado = false; // 👈 regresa a la vista inicial
+    },
+  },
+};
 </script>
 
 <style scoped>
-/* ====== ESTRUCTURA GENERAL ====== */
-.pagina-consulta {
-  background-color: #f7f8fa;
-  min-height: calc(100vh - 160px);
-  display: flex;
-  align-items: flex-start;
-  padding-top: 40px;
-
-  padding-bottom: 40px;
+.inicio-consulta {
+  font-family: "Open Sans", sans-serif;
 }
 
-.card-consulta {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 2.5rem;
-  width: 100%;
-  border: 1px solid #E0E0E0;
+/* 💫 Animación tipo “canvas-slide” */
+.canvas-slide-enter-active,
+.canvas-slide-leave-active {
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ====== TÍTULO ====== */
-.titulo-principal {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #002e6d;
-  font-family: "Segoe UI", Arial, sans-serif;
-  margin-bottom: 1rem;
-}
-
-/* ====== ALERTA ====== */
-.mensaje-alerta {
-  font-size: 1rem;
-  color: #002e6d;
-  border: 1px solid #b6dcff;
-  border-radius: 10px;
-  background-color: #e9f4ff;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
-}
-
-.icono-info {
-  color: #002e6d;
-  flex-shrink: 0;
-}
-
-/* ====== RESULTADOS ====== */
-
-.resumen-general {
-  background-color: #f8fbff;
-  border: 1px solid #cfe2ff;
-  border-radius: 10px;
-}
-
-.resumen-general h5 {
-  color: #002e6d;
-  border-bottom: 1px solid #dee2e6;
-  padding-bottom: 0.5rem;
-}
-
-.resumen-datos {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.resumen-datos p {
-  font-size: 0.95rem;
-  color: #333;
-  margin: 0;
-}
-
-.seccion-resultados {
-  margin-top: 1rem;
-}
-
-.bloque {
-  margin-bottom: 1.5rem;
-}
-
-.seccion-titulo {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #002e6d;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-
-.card-item {
-  background-color: #ffffff;
-  border: 1px solid #d9e1ec;
-  border-left: 5px solid #002e6d;
-  /* Azul institucional */
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  transition: box-shadow 0.2s ease, transform 0.1s ease;
-}
-
-.card-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-.card-header {
-  background-color: #f5f7fb;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e0e6ef;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #002e6d;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.card-body {
-  padding: 0.75rem 1rem;
-  font-size: 0.92rem;
-  color: #333;
-  line-height: 1.6;
-}
-
-.dato-item {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0.4rem;
-}
-
-.label {
-  color: #002e6d;
-  font-weight: 600;
-  margin-bottom: 0.15rem;
-}
-
-.valor {
-  color: #333;
-  text-align: left;
-  font-weight: 400;
-}
-
-
-.badge {
-  font-size: 0.75rem;
-  padding: 0.35rem 0.55rem;
-  border-radius: 6px;
-}
-
-
-/* ====== TRANSICIONES ====== */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease, transform 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
+.canvas-slide-enter-from {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateX(60px) scale(0.98);
 }
 
-/* ====== RESPONSIVO ====== */
-@media (max-width: 768px) {
-  .card-consulta {
-    padding: 1.5rem;
-    margin: 0 1rem;
-  }
+.canvas-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-60px) scale(0.98);
+}
 
-  .titulo-principal {
-    font-size: 1.1rem;
-    text-align: center;
-  }
+/* 🔹 Bloque institucional izquierdo */
+.info-text {
+  color: #444;
+}
 
-  .mensaje-alerta {
-    font-size: 0.85rem;
-    text-align: justify;
-  }
+.titulo-info {
+  color: #1a4fa3;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
 
-  .resumen-datos {
-    flex-direction: column;
-    align-items: flex-start;
+.info-text p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #555;
+}
+
+/* 🔹 Botón del portal */
+.boton-portal {
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.boton-portal:hover {
+  background-color: #0d47a1;
+  color: #fff;
+  border-color: #0d47a1;
+}
+
+/* 🔹 Logo pequeño */
+.logo-mini {
+  height: 150px;
+  width: auto;
+  opacity: 0.95;
+}
+
+/* 🔹 Card */
+.card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* 🔹 Botón principal */
+.btn-thin {
+  background-color: #0d47a1;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-thin:hover {
+  background-color: #093678;
+  transform: translateY(-1px);
+}
+
+/* 🔹 Input */
+.form-control {
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  background-color: #0936780a;
+  border: 1px solid #ced4da;
+  font-size: 0.8rem;
+}
+
+.form-control:focus {
+  border-color: #1565c0;
+  box-shadow: 0 0 0 0.2rem rgba(21, 101, 192, 0.15);
+}
+
+/* 🔹 Resultado simulado */
+.resultado-container {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

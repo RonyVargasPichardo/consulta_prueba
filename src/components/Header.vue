@@ -1,112 +1,46 @@
 <template>
-    <header class="header shadow-sm">
-        <div class="container-fluid d-flex align-items-center justify-content-start flex-wrap py-3 px-4 header-content">
-
-            <!-- Logo institucional -->
-            <a href="https://www.contraloria.gob.do" target="_blank"
-                class="text-decoration-none d-flex align-items-center">
-                <!-- Logo versión escritorio -->
-                <img src="/src/assets/LogoContraloriaWeb.png" alt="Logo Contraloría General de la República Dominicana"
-                    class="logo logo-desktop" />
-
-                <!-- Logo versión móvil -->
-                <img src="/src/assets/LogoContraloriaMobile.png"
-                    alt="Logo Contraloría General de la República Dominicana" class="logo logo-mobile" />
-            </a>
-
-
-            <!-- Título del sistema -->
-            <h1 class="titulo-sistema mb-0">
-                Consulta de Trámites de Proveedores del Estado
-            </h1>
+  <header class="header-institucional shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+      <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo -->
+        <div class="d-flex align-items-center">
+          <img
+            src="../assets/LogoContraloriaWeb.png"
+            alt="Logo Institucional"
+            class="me-3"
+            style="height: 50px"
+          />
+          <div>
+            <h5 class="mb-0 fw-semibold text-primary">Contraloría General</h5>
+            <small class="text-muted">República Dominicana</small>
+          </div>
         </div>
-    </header>
+
+        <!-- Texto o botón opcional -->
+        <div class="d-none d-md-block">
+          <button class="btn btn-outline-primary btn-sm px-3">
+            Volver al Portal Institucional
+          </button>
+        </div>
+      </div>
+    </nav>
+  </header>
 </template>
 
-<script>
-export default {
-    name: 'HeaderComponent'
-}
-</script>
-
 <style scoped>
-.header {
-    background-color: #FAFAFA;
-    border-bottom: 1px solid #E0E0E0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    padding-left: 3rem;
+.header-institucional {
+  font-family: "Open Sans", sans-serif;
 }
-
-.header-content {
-    gap: 40px;
-
+.text-primary {
+  color: #0d47a1 !important;
 }
-
-
-/* Logo base */
-.logo {
-    height: 90px;
-    display: block;
-    object-fit: contain;
+.btn-outline-primary {
+  border-color: #0d47a1;
+  color: #0d47a1;
+  transition: 0.3s;
 }
-
-/* Versión escritorio */
-.logo-desktop {
-    max-width: 220px;
-}
-
-/* Versión móvil (oculta por defecto) */
-.logo-mobile {
-    display: none;
-    height: auto;
-    max-width: 160px;
-}
-
-.titulo-sistema {
-    font-size: 1.35rem;
-    /* ~22px */
-    font-weight: 600;
-    color: #002E6D;
-    font-family: "Segoe UI", Arial, sans-serif;
-    line-height: 1.2;
-    padding-top: 2rem;
-    letter-spacing: 0.5px;
-}
-
-@media (max-width: 1200px) {
-    .header {
-        padding-left: 1rem;
-    }
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-
-    .header {
-        padding-left: 0;
-    }
-
-    .header-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 0;
-    }
-
-    /* Mostrar logo móvil y ocultar desktop */
-    .logo-desktop {
-        display: none;
-    }
-
-    .logo-mobile {
-        display: block;
-    }
-
-    .titulo-sistema {
-        font-size: 1.1rem;
-    }
-
-    .titulo-sistema {
-    padding-top: 0.5rem;
-  }
+.btn-outline-primary:hover {
+  background-color: #0d47a1;
+  color: white;
 }
 </style>
